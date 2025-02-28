@@ -193,7 +193,6 @@ def build_and_evaluate_models(data_final):
     }
 ```
 
-Each model was evaluated using a comprehensive set of metrics to address the class imbalance challenge.
 
 ## 🧠 Key Technical Implementations
 
