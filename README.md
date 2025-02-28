@@ -1,6 +1,24 @@
 # Creadit Card Fraud Detection
 ML Project that predict credit card fraud - Supervised Leanring
 
+### Results and Insights
+Key highlights:
+Data insights:
+- There are more fraudulent transations from 10PM to 3AM
+- Fraudulent transactions are usually high value and from shopping and grocery category
+- The time between two transactions can be a good indicator
+- 60+ age group is more likely to have fraud transactions than younger age group
+
+Models results:
+- Use SMOTE techniques to handle imbalanced class 
+- Gradient Boosting is the best models out of three choosen, with AUC > 95%, high overall accuracy, and high precision
+  
+![download](https://github.com/user-attachments/assets/0fc5abc3-c67f-40af-a057-2436bd151b4d)
+All the model have ROC and accuracy of more than 90%. Which mean overall, the models have high probability to identify postive class (non-fraud) over the negative class (fraud) with high overall model prediction. However, with the imbalanced data, we should look closer into Precision, Gradient Boosting has highest percision which mean out of total prediction, 92% are correctly classified as true postive (non-fraud). Therefore, Gradient Boosting is the best model.
+
+---
+#Project Details
+
 ## Data Wraggling
 The dataset has the fraud/non-fraud classification, thus we use supervised learning model
 
@@ -237,5 +255,265 @@ ax2.set_ylabel('Percentage of Transactions (%)')
 ax2.tick_params(axis='y')
 ~~~
 ![download](https://github.com/user-attachments/assets/766e1a50-b76d-450e-a308-c68c5ce42b04)
+> It can be seen from the graph that those transactions that are close to each other only account for small percentage of transactions but has high fraud rate especially 5-15 min, 15-30 min and 30-60 mins has fraud rate more than 60%
 
+2. Monetary features
+The amount of the transactions is also a good indicator of the fraud because usually the amount is high. I categorize the amount into different bin to visualize.
+~~~
+print(data_drop_features['amt'].describe())
+count    97748.000000
+mean       102.832444
+std        217.047969
+min          1.000000
+25%         10.567500
+50%         50.160000
+75%         91.782500
+max      15047.030000
 
+plt.figure(figsize=(12, 6))
+data_drop_features['amount_bin'] = pd.cut(
+    data_drop_features['amt'],
+    bins=[0, 25, 100, 500, 1000, float('inf')],
+    labels=['$0-$25', '$25-$100', '$100-$500', '$500-$1000', '$1000+']
+)
+amount_fraud = data_drop_features.groupby('amount_bin')['is_fraud'].mean() * 100
+sns.barplot(x=amount_fraud.index, y=amount_fraud.values,color='#FFB703')
+plt.title('Fraud Rate by Transaction Amount')
+plt.xlabel('Transaction Amount')
+plt.ylabel('Fraud Rate (%)')
+~~~
+![download](https://github.com/user-attachments/assets/641483fe-73f1-4d3d-8557-99073dcbc4ab)
+> High value transactions are more prone to be fraudulent transactions
+3. Age Features
+~~~
+data_drop_features['dob'] = pd.to_datetime(data_drop_features['dob'])
+defined_date = pd.to_datetime('2019-12-31')
+data_drop_features['age'] = (defined_date - data_drop_features['dob']).dt.days // 365
+
+bins = [0, 18, 30, 45, 60, 100]
+labels = ['Under 18', '18-29', '30-44', '45-59', '60+']
+data_drop_features['age_group'] = pd.cut(data_drop_features['age'], bins=bins, labels=labels, right=False)
+
+plt.figure(figsize=(12, 6))
+age_fraud = data_drop_features.groupby('age_group')['is_fraud'].mean() * 100
+sns.barplot(x=age_fraud.index, y=age_fraud.values,color='#FFB703')
+plt.title('Fraud Rate by Age Group')
+plt.xlabel('Age Group')
+plt.ylabel('Fraud Rate (%)')
+~~~
+![download](https://github.com/user-attachments/assets/177287c3-51ac-4024-861c-2179721e1223)
+> Older age group are more prone to be fraud than the younger age groups
+
+3. Category Features
+I also visualize the fraud rate in relation to the catgory of the transactions
+~~~
+# Calculate fraudulent transaction counts per category
+category_fraud_count = data_drop_features[data_drop_features['is_fraud'] == 1]['category'].value_counts()
+category_total_count = data_drop_features['category'].value_counts()
+categories = sorted(set(category_fraud_count.index) | set(category_total_count.index))
+
+fraud_counts = [category_fraud_count.get(cat, 0) for cat in categories]
+total_counts = [category_total_count.get(cat, 0) for cat in categories]
+bar_width = 0.35
+x = np.arange(len(categories))
+
+# Create the bar chart
+plt.figure(figsize=(14, 7))
+bar1 = plt.bar(x - bar_width/2, fraud_counts, bar_width, label='Fraudulent Transactions', color='#FFB703')
+bar2 = plt.bar(x + bar_width/2, total_counts, bar_width, label='Total Transactions', color='#FB8500')
+
+# Set labels and title
+plt.xlabel('Category')
+plt.ylabel('Number of Transactions')
+plt.title('Fraudulent vs Total Transactions by Category')
+plt.xticks(x, categories, rotation=45, ha='right')
+plt.legend()
+plt.tight_layout()
+plt.show()
+~~~
+![download](https://github.com/user-attachments/assets/8a2fa0db-5f10-474e-adc1-a8f72f5d9fc0)
+> Grocery_pos and shopping_net and shopping_pos are likely to be fraudulent than other category
+
+4. Distance Feature
+I used the longtitude and latitude of the card holder and longtitude and latitude of the merchance to calculate the distance and visualize it.
+To calculate the distance, I use geopy library to define a function
+~~~
+def calculate_geopy_distance(row):
+    card_location = (row['lat'], row['long'])
+    merchant_location = (row['merch_lat'], row['merch_long'])
+    return geodesic(card_location, merchant_location).kilometers
+data_drop_features['distance_km'] = data_drop_features.apply(calculate_geopy_distance, axis=1)
+print(data_drop_features['distance_km'].describe())
+count    97748.000000
+mean        76.146272
+std         29.014056
+min          0.469721
+25%         55.388372
+50%         78.351432
+75%         98.297578
+max        146.541139
+Name: distance_km, dtype: float64
+~~~
+Then I visualize it
+~~~
+plt.figure(figsize=(12, 6))
+data_drop_features['distance_bin'] = pd.cut(
+    data_drop_features['distance_km'],
+    bins=[0, 5, 20, 50, 100, float('inf')],
+    labels=['0-5 km', '5-20 km', '20-50 km', '50-100 km', '100+ km']
+)
+distance_fraud = data_drop_features.groupby('distance_bin')['is_fraud'].mean() * 100
+sns.barplot(x=distance_fraud.index, y=distance_fraud.values,color='#FFB703')
+plt.title('Fraud Rate by Distance')
+plt.xlabel('Distance Between Customer and Merchant')
+plt.ylabel('Fraud Rate (%)')
+~~~
+![download](https://github.com/user-attachments/assets/d02c2dba-c441-4f11-9c4b-a73320bc1e40)
+> The longer the distance between the card holder and the merchant the more fraud but also it is not so much different and we have to consider the type of transaction it is online or offline. For training the model i will not group it but use the distance only.
+
+5. Merchant and Job Features
+Since there are so many merchant and job so I group them based on the fraud rate into 'low-risk', 'medium-risk', 'high-risk'
+~~~
+#Grouping Merchant
+merchant_group = data_drop_features.groupby('merchant')['is_fraud'].mean().reset_index()
+merchant_group['merchant_risk'] = pd.qcut(merchant_group['is_fraud'], q=3, labels=['low-risk', 'medium-risk', 'high-risk'])
+data_drop_features = data_drop_features.merge(merchant_group[['merchant', 'merchant_risk']], on='merchant', how='left')
+
+#Grouping Job
+job_fraud = data_drop_features.groupby('job')['is_fraud'].mean().reset_index()
+job_fraud['job_risk'] = pd.qcut(job_fraud['is_fraud'], q=3, labels=['low-risk', 'medium-risk', 'high-risk'])
+data_drop_features = data_drop_features.merge(job_fraud[['job', 'job_risk']], on='job', how='left')
+~~~
+Finally I create a correlation map of all numeric features and also the catergory one that is not group by fraud rate
+~~~
+# Correlation Heatmap
+plt.figure(figsize=(14, 10))
+numeric_cols = ['amt','time_diff_minutes','age', 'is_fraud','distance_km']
+
+category_encoded = pd.get_dummies(data_drop_features[['category','night_trans']], drop_first=True) # Pass a list of column names
+correlation_data = pd.concat([data_drop_features[numeric_cols], category_encoded], axis=1)
+correlation = correlation_data.corr()
+mask = np.triu(np.ones_like(correlation, dtype=bool))
+sns.heatmap(correlation, mask=mask, annot=True, fmt='.2f', cmap='Oranges')
+plt.title('Correlation Heatmap')
+plt.tight_layout()
+~~~
+![download](https://github.com/user-attachments/assets/ff5b182c-b5b2-402f-9e20-7908ab316423)
+
+> is_fraud is highly correlated with amount, moderate correlation with night_trans, category_shopping_net and category_shopping_net which is also spotted out before. Night transactions are usually made with these category and gas_transport. High transaction are highly correlated with shopping category. Distance have no correlation with other variable, and from the descriptive graph above, distance should not be included to train model. Time_different_minutes negatively correlated with fraud, which also suggest that the less time in between transaction, the more likely it is fraud.
+
+#### Final Features Set
+- Categorical: time_diff_group, merchant_risk, job_risk, age_group, night_trans
+- Numercial: amt
+~~~
+data_final = data_drop_features[['category','amt','time_diff_group','merchant_risk','is_fraud','job_risk',
+                                 'age_group','night_trans']]
+~~~
+## Building Models
+I build the pipeline of spliting data into training and testing set (70%-30%), and transforming the numerical and categorical
+- Numerical > use StandardScaler() to rescale data to have mean of 0 and standard deviatopm of 1 unit
+- Categorical > use OneHotEncoder to create dummies
+
+As I mentioned below because fraud only amount for small percentage, I use SMOTE method to create synthetic sample to make fraud more prominent
+
+I chose 3 models, Linear Regression as a baseline model, tree-model is Random Forest and boosting model Gradient Boosting
+
+~~~
+def build_and_evaluate_models(data_final):
+    """Build and evaluate multiple models for fraud detection"""
+    # Separate features and target
+    X = data_final.drop('is_fraud', axis=1)
+    y = data_final['is_fraud']
+
+    # Split the data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+
+    # Define categorical and numerical features
+    categorical_features = ['category', 'job_risk', 'age_group','time_diff_group','merchant_risk']
+    numerical_features = X.columns.drop(categorical_features).tolist()
+
+    # Initialize preprocessing steps
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), numerical_features),
+            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+        ],
+         remainder='passthrough'
+    )
+
+    # Initialize preprocessing and models
+    smote = SMOTE(random_state=42, sampling_strategy=0.3)
+
+    # Adjusted parameters for imbalanced data
+    models = {
+        'Logistic Regression': LogisticRegression(class_weight='balanced', max_iter=1000),
+        'Random Forest': RandomForestClassifier(
+            class_weight='balanced',
+            n_estimators=100,
+            min_samples_leaf=5,
+            max_depth=10
+        ),
+        'Gradient Boosting': GradientBoostingClassifier(
+            n_estimators=100,
+            subsample=0.8,
+            max_depth=5,
+            min_samples_leaf=5,
+            learning_rate=0.1
+        )
+    }
+
+    # Store predictions and probabilities
+    predictions = {}
+    probabilities = {}
+
+    # Train models and make predictions
+    for name, model in models.items():
+        pipeline = Pipeline([
+            ('preprocessor', preprocessor), # Apply column transformer first
+            ('smote', smote), # Then apply SMOTE
+            ('classifier', model)
+        ])
+
+        # Train model
+        pipeline.fit(X_train, y_train)
+
+        # Store predictions and probabilities
+        predictions[name] = pipeline.predict(X_test)
+        probabilities[name] = pipeline.predict_proba(X_test)[:, 1]
+
+    # Calculate metrics for each model
+    metrics = []
+    for model_name, y_pred in predictions.items():
+        metrics.append({
+            'Model': model_name,
+            'Accuracy': accuracy_score(y_test, y_pred),
+            'Precision': precision_score(y_test, y_pred),
+            'Recall': recall_score(y_test, y_pred),
+            'F1-Score': f1_score(y_test, y_pred),
+            'ROC-AUC': roc_auc_score(y_test, probabilities[model_name])
+        })
+
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame(metrics)
+    print("\nModel Performance Metrics\n")
+    print(metrics_df)
+
+    # Create heatmap
+    plt.figure(figsize=(12, 6))
+    sns.heatmap(metrics_df.set_index('Model'),
+                annot=True,
+                fmt=".3f",
+                cmap="Oranges",
+                cbar=True,
+                linewidths=0.5)
+    plt.title('Model Performance Metrics')
+    plt.show()
+
+    # Find and print best model
+    best_model = metrics_df.loc[metrics_df['ROC-AUC'].idxmax(), 'Model']
+    print(f"\nBest performing model based on ROC-AUC: {best_model}")
+
+    return metrics_df
+~~~
+### Data Source
+Provided by UniGap
