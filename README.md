@@ -86,14 +86,16 @@ data_drop_features['time_diff'] = data_drop_features['time_diff'].fillna(pd.Time
 
 I categorized these time differences into meaningful groups:
 
-![Time Difference Fraud Rate](https://github.com/user-attachments/assets/766e1a50-b76d-450e-a308-c68c5ce42b04)
+![download](https://github.com/user-attachments/assets/c70f6aa4-d7ea-4d50-b966-9d9f777ad7a3)
+
 
 Transactions occurring 5-60 minutes apart showed significantly higher fraud rates.
 
 #### 💵 Monetary Features
 I analyzed transaction amounts and found that higher value transactions had higher fraud rates:
 
-![Amount Fraud Rate](https://github.com/user-attachments/assets/641483fe-73f1-4d3d-8557-99073dcbc4ab)
+![download](https://github.com/user-attachments/assets/a3932b80-2d87-4413-b043-023426aea5bb)
+
 
 #### 👤 Age Features
 I calculated customer age and grouped them to analyze fraud patterns:
@@ -105,14 +107,16 @@ labels = ['Under 18', '18-29', '30-44', '45-59', '60+']
 data_drop_features['age_group'] = pd.cut(data_drop_features['age'], bins=bins, labels=labels, right=False)
 ```
 
-![Age Group Fraud Rate](https://github.com/user-attachments/assets/177287c3-51ac-4024-861c-2179721e1223)
+![download](https://github.com/user-attachments/assets/b35fc799-36bf-4e59-93f5-47fd16a63d48)
+
 
 The 60+ age group showed higher vulnerability to fraud.
 
 #### 🛍️ Category Features
 Analysis of transaction categories revealed shopping and grocery transactions had higher fraud rates:
 
-![Category Fraud Rate](https://github.com/user-attachments/assets/8a2fa0db-5f10-474e-adc1-a8f72f5d9fc0)
+![download](https://github.com/user-attachments/assets/53daf378-78c0-40cf-95f7-e7822c38e0e6)
+
 
 #### 📍 Distance Feature
 I calculated the distance between customer and merchant locations:
@@ -125,7 +129,6 @@ def calculate_geopy_distance(row):
 
 data_drop_features['distance_km'] = data_drop_features.apply(calculate_geopy_distance, axis=1)
 ```
-
 ![Distance Fraud Rate](https://github.com/user-attachments/assets/d02c2dba-c441-4f11-9c4b-a73320bc1e40)
 
 #### 🏬 Merchant and Job Risk Features
