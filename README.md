@@ -19,7 +19,7 @@ A machine learning project that predicts credit card fraud using supervised lear
   - High overall accuracy
   - Superior precision in fraud detection
 
-![Model Performance Comparison](https://github.com/user-attachments/assets/0fc5abc3-c67f-40af-a057-2436bd151b4d)
+![download](https://github.com/user-attachments/assets/fbbdac07-a0f5-4260-9463-81cfcd02cf20)
 
 All evaluated models achieved ROC curves and accuracy ratings exceeding 90%. This indicates strong overall performance in differentiating between legitimate and fraudulent transactions. However, given the inherent class imbalance in fraud detection, precision metrics provide crucial additional insight. Gradient Boosting demonstrated the highest precision (92%), meaning that of all transactions flagged as fraudulent, 92% were correctly classified. This makes Gradient Boosting the preferred model for deployment.
 
@@ -143,7 +143,8 @@ job_fraud['job_risk'] = pd.qcut(job_fraud['is_fraud'], q=3, labels=['low-risk', 
 
 I created a correlation heatmap to visualize relationships between features:
 
-![Correlation Heatmap](https://github.com/user-attachments/assets/ff5b182c-b5b2-402f-9e20-7908ab316423)
+![download](https://github.com/user-attachments/assets/3397a607-1f58-4c9e-95a4-91d30d954ee2)
+
 
 ### 3️⃣ Model Building
 
