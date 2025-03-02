@@ -155,6 +155,7 @@ I developed a comprehensive modeling pipeline:
 
 ```python
 def build_and_evaluate_models(data_final):
+    """Build and evaluate multiple models for fraud detection"""
     # Separate features and target
     X = data_final.drop('is_fraud', axis=1)
     y = data_final['is_fraud']
@@ -163,7 +164,7 @@ def build_and_evaluate_models(data_final):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 
     # Define categorical and numerical features
-    categorical_features = ['category', 'job_risk', 'age_group','time_diff_group','merchant_risk']
+    categorical_features = [col for col in data_final.columns if data_final[col].dtype in ['object','category']] #transforming
     numerical_features = X.columns.drop(categorical_features).tolist()
 
     # Initialize preprocessing steps
@@ -175,10 +176,10 @@ def build_and_evaluate_models(data_final):
          remainder='passthrough'
     )
 
-    # Initialize SMOTE for handling imbalanced data
+    # Initialize preprocessing and models
     smote = SMOTE(random_state=42, sampling_strategy=0.3)
 
-    # Models with parameters optimized for imbalanced data
+    # Adjusted parameters for imbalanced data
     models = {
         'Logistic Regression': LogisticRegression(class_weight='balanced', max_iter=1000),
         'Random Forest': RandomForestClassifier(
@@ -195,8 +196,60 @@ def build_and_evaluate_models(data_final):
             learning_rate=0.1
         )
     }
-```
 
+    # Store predictions and probabilities
+    predictions = {}
+    probabilities = {}
+
+    # Train models and make predictions
+    for name, model in models.items():
+        pipeline = Pipeline([
+            ('preprocessor', preprocessor), # Apply column transformer first
+            ('smote', smote), # Then apply SMOTE
+            ('classifier', model)
+        ])
+
+        # Train model
+        pipeline.fit(X_train, y_train)
+
+        # Store predictions and probabilities
+        predictions[name] = pipeline.predict(X_test)
+        probabilities[name] = pipeline.predict_proba(X_test)[:, 1]
+
+    # Calculate metrics for each model
+    metrics = []
+    for model_name, y_pred in predictions.items():
+        metrics.append({
+            'Model': model_name,
+            'Accuracy': accuracy_score(y_test, y_pred),
+            'Precision': precision_score(y_test, y_pred),
+            'Recall': recall_score(y_test, y_pred),
+            'F1-Score': f1_score(y_test, y_pred),
+            'ROC-AUC': roc_auc_score(y_test, probabilities[model_name])
+        })
+
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame(metrics)
+    print("\nModel Performance Metrics\n")
+    print(metrics_df)
+
+    # Create heatmap
+    plt.figure(figsize=(12, 6))
+    sns.heatmap(metrics_df.set_index('Model'),
+                annot=True,
+                fmt=".3f",
+                cmap="Oranges",
+                cbar=True,
+                linewidths=0.5)
+    plt.title('Model Performance Metrics')
+    plt.show()
+
+    # Find and print best model
+    best_model = metrics_df.loc[metrics_df['ROC-AUC'].idxmax(), 'Model']
+    print(f"\nBest performing model based on ROC-AUC: {best_model}")
+
+    return metrics_df
+```
 
 ## 🧠 Key Technical Implementations
 
