@@ -1,6 +1,9 @@
-# 💳 Credit Card Fraud Detection
+# Credit Card Fraud Detection
 
-## 📊 Overview
+![Credit Card Fraud Detection](https://img.shields.io/badge/Finance-Credit_Card_Fraud_Detection-green)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+
+## Overview
 A machine learning project that predicts credit card fraud using supervised learning techniques. This project analyzes transaction patterns and customer demographics to identify potentially fraudulent credit card activities with high accuracy.
 
 ## 🔍 Key Findings
@@ -25,7 +28,7 @@ All evaluated models achieved ROC curves and accuracy ratings exceeding 90%. Thi
 
 ## 🛠️ Project Steps
 
-### 1️⃣ Data Preprocessing
+### Data Preprocessing
 I started by exploring and cleaning the initial dataset:
 
 ```python
@@ -56,7 +59,7 @@ print(data_drop_features['is_fraud'].value_counts(normalize=True))
 # 1    0.076789
 ```
 
-### 2️⃣ Feature Engineering
+### Feature Engineering
 
 #### ⏰ Time Features
 I extracted hour and day of week from transaction timestamps:
@@ -149,7 +152,7 @@ I created a correlation heatmap to visualize relationships between features:
 ![download](https://github.com/user-attachments/assets/3397a607-1f58-4c9e-95a4-91d30d954ee2)
 
 
-### 3️⃣ Model Building
+### Model Building
 
 I developed a comprehensive modeling pipeline:
 
