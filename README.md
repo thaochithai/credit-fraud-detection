@@ -1,6 +1,6 @@
 # Credit Card Fraud Detection
 
-![Credit Card Fraud Detection](https://img.shields.io/badge/Finance-Credit_Card_Fraud_Detection-green)
+![Credit Card Fraud Detection](https://img.shields.io/badge/ML-Credit_Card_Fraud_Detection-green)
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
 ## Overview
