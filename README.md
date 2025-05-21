@@ -6,18 +6,18 @@
 ## Overview
 A machine learning project that predicts credit card fraud using supervised learning techniques. This project analyzes transaction patterns and customer demographics to identify potentially fraudulent credit card activities with high accuracy.
 
-## 🔍 Key Findings
+## Key Findings
 
 ### Data Insights
-- 🕙 **Temporal Patterns**: Higher rates of fraudulent transactions occur between 10 PM and 3 AM
-- 💰 **Transaction Characteristics**: Fraudulent transactions typically involve higher monetary values
-- 🛒 **Category Analysis**: Shopping and grocery categories show elevated fraud rates
-- ⏱️ **Transaction Timing**: Short intervals between consecutive transactions serve as strong fraud indicators
-- 👴 **Demographic Trends**: The 60+ age group demonstrates increased vulnerability to fraud compared to younger demographics
+- **Temporal Patterns**: Higher rates of fraudulent transactions occur between 10 PM and 3 AM
+- **Transaction Characteristics**: Fraudulent transactions typically involve higher monetary values
+- **Category Analysis**: Shopping and grocery categories show elevated fraud rates
+- **Transaction Timing**: Short intervals between consecutive transactions serve as strong fraud indicators
+- **Demographic Trends**: The 60+ age group demonstrates increased vulnerability to fraud compared to younger demographics
 
 ### Model Performance
 - Implemented SMOTE (Synthetic Minority Oversampling Technique) to address class imbalance
-- 🏆 Gradient Boosting emerged as the top-performing model with:
+- Gradient Boosting emerged as the top-performing model with:
   - AUC > 95%
   - High overall accuracy
   - Superior precision in fraud detection
@@ -61,7 +61,7 @@ print(data_drop_features['is_fraud'].value_counts(normalize=True))
 
 ### Feature Engineering
 
-#### ⏰ Time Features
+#### Time Features
 I extracted hour and day of week from transaction timestamps:
 
 ```python
@@ -100,7 +100,7 @@ I analyzed transaction amounts and found that higher value transactions had high
 ![download](https://github.com/user-attachments/assets/a3932b80-2d87-4413-b043-023426aea5bb)
 
 
-#### 👤 Age Features
+#### Age Features
 I calculated customer age and grouped them to analyze fraud patterns:
 
 ```python
@@ -115,13 +115,13 @@ data_drop_features['age_group'] = pd.cut(data_drop_features['age'], bins=bins, l
 
 The 60+ age group showed higher vulnerability to fraud.
 
-#### 🛍️ Category Features
+#### Category Features
 Analysis of transaction categories revealed shopping and grocery transactions had higher fraud rates:
 
 ![download](https://github.com/user-attachments/assets/53daf378-78c0-40cf-95f7-e7822c38e0e6)
 
 
-#### 📍 Distance Feature
+#### Distance Feature
 I calculated the distance between customer and merchant locations:
 
 ```python
@@ -134,7 +134,7 @@ data_drop_features['distance_km'] = data_drop_features.apply(calculate_geopy_dis
 ```
 ![Distance Fraud Rate](https://github.com/user-attachments/assets/d02c2dba-c441-4f11-9c4b-a73320bc1e40)
 
-#### 🏬 Merchant and Job Risk Features
+#### Merchant and Job Risk Features
 I grouped merchants and jobs based on their historical fraud rates:
 
 ```python
@@ -254,7 +254,7 @@ def build_and_evaluate_models(data_final):
     return metrics_df
 ```
 
-## 🧠 Key Technical Implementations
+## Key Technical Implementations
 
 - **Feature Engineering Pipeline**: Created domain-specific features from raw transaction data
 - **Class Imbalance Handling**: Applied SMOTE to create synthetic fraud examples
@@ -262,22 +262,22 @@ def build_and_evaluate_models(data_final):
 - **Evaluation Strategy**: Emphasized precision to minimize false positives
 - **Preprocessing Pipeline**: Streamlined data transformation for production readiness
 
-## 📈 Conclusions
+## Conclusions
 
 The project successfully demonstrates that machine learning can effectively detect credit card fraud by identifying subtle patterns in transaction data. Key insights include:
 
-1. 🌙 Night transactions (10PM-3AM) require elevated scrutiny
-2. 💸 High-value transactions should trigger additional verification
-3. ⏲️ Transactions occurring within short time intervals (5-60 minutes) show the highest fraud risk
-4. 👵 Special protection measures may benefit the 60+ age demographic
-5. 🛍️ Shopping and grocery categories demonstrate higher fraud vulnerability
+1. Night transactions (10PM-3AM) require elevated scrutiny
+2. High-value transactions should trigger additional verification
+3. Transactions occurring within short time intervals (5-60 minutes) show the highest fraud risk
+4. Special protection measures may benefit the 60+ age demographic
+5. Shopping and grocery categories demonstrate higher fraud vulnerability
 
 The Gradient Boosting model provides the optimal balance between overall accuracy and precision in fraud identification, making it suitable for real-world deployment.
 
-## 🔮 Future Work
+## Future Work
 - Real-time fraud detection implementation
 - Additional feature engineering based on transaction sequences
 - Exploration of deep learning approaches for improved detection
 
-## 📚 Data Source
+## Data Source
 The dataset was provided by UniGap.
